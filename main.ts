@@ -3,7 +3,7 @@
  * ZtoApi - OpenAI兼容API代理服务器
  * 
  * 功能概述：
- * - 为 Z.ai 的 GLM-4.5 模型提供 OpenAI 兼容的 API 接口
+ * - 为 Z.ai 的 GLM-4.6/4.5 模型提供 OpenAI 兼容的 API 接口
  * - 支持流式和非流式响应模式
  * - 提供实时监控 Dashboard 功能
  * - 支持匿名 token 自动获取
@@ -255,6 +255,21 @@ interface ModelConfig {
 
 const SUPPORTED_MODELS: ModelConfig[] = [
   {
+    id: "GLM-4-6-API-V1",
+    name: "GLM-4.6",
+    upstreamId: "GLM-4-6-API-V1",
+    capabilities: {
+      vision: false,
+      mcp: true,
+      thinking: true
+    },
+    defaultParams: {
+      top_p: 0.95,
+      temperature: 0.6,
+      max_tokens: 200000
+    }
+  },
+  {
     id: "0727-360B-API",
     name: "GLM-4.5",
     upstreamId: "0727-360B-API",
@@ -311,10 +326,17 @@ function normalizeModelId(modelId: string): string {
   
   // 处理常见的模型ID映射
   const modelMappings: Record<string, string> = {
+    // GLM-4.6 映射
+    'glm-4-6-api-v1': 'GLM-4-6-API-V1',
+    'glm-4.6': 'GLM-4-6-API-V1',
+    'glm4.6': 'GLM-4-6-API-V1',
+    'glm_4.6': 'GLM-4-6-API-V1',
+    // GLM-4.5V 映射
     'glm-4.5v': 'glm-4.5v',
     'glm4.5v': 'glm-4.5v',
     'glm_4.5v': 'glm-4.5v',
     'gpt-4-vision-preview': 'glm-4.5v',  // 向后兼容
+    // GLM-4.5 映射
     '0727-360b-api': '0727-360B-API',
     'glm-4.5': '0727-360B-API',
     'glm4.5': '0727-360B-API',
@@ -1116,8 +1138,8 @@ function getIndexHTML(): string {
     <div class="container">
         <header>
             <h1>ZtoApi</h1>
-            <div class="subtitle">OpenAI兼容API代理 for Z.ai GLM-4.5</div>
-            <p>一个高性能、易于部署的API代理服务，让你能够使用OpenAI兼容的格式访问Z.ai的GLM-4.5模型。</p>
+            <div class="subtitle">OpenAI兼容API代理 for Z.ai GLM-4.6 & GLM-4.5</div>
+            <p>一个高性能、易于部署的API代理服务，让你能够使用OpenAI兼容的格式访问Z.ai的GLM-4.6/4.5模型。</p>
         </header>
         
         <div class="links">
@@ -1182,7 +1204,7 @@ function getIndexHTML(): string {
         </div>
         
         <footer>
-            <p>© 2024 ZtoApi. Powered by Deno & Z.ai GLM-4.5</p>
+            <p>© 2024 ZtoApi. Powered by Deno & Z.ai GLM-4.6/4.5</p>
         </footer>
     </div>
 </body>
@@ -2259,7 +2281,7 @@ return `<!DOCTYPE html>
     
     <section id="overview">
         <h2>概述</h2>
-        <p>这是一个为Z.ai GLM-4.5模型提供OpenAI兼容API接口的代理服务器。它允许你使用标准的OpenAI API格式与Z.ai的GLM-4.5模型进行交互，支持流式和非流式响应。</p>
+        <p>这是一个为Z.ai GLM-4.6/4.5模型提供OpenAI兼容API接口的代理服务器。它允许你使用标准的OpenAI API格式与Z.ai的GLM-4.6/4.5模型进行交互，支持流式和非流式响应。</p>
         <p><strong>基础URL:</strong> <code>http://localhost:9090/v1</code></p>
         <div class="note">
             <strong>注意:</strong> 默认端口为9090，可以通过环境变量PORT进行修改。
@@ -2329,7 +2351,7 @@ Authorization: Bearer your-api-key</div>
                             <td>model</td>
                             <td>string</td>
                             <td>是</td>
-                            <td>要使用的模型ID，例如 "GLM-4.5"</td>
+                            <td>要使用的模型ID，例如 "GLM-4.6", "GLM-4.5"</td>
                         </tr>
                         <tr>
                             <td>messages</td>
@@ -2405,18 +2427,18 @@ api_key="your-api-key",  # 对应 DEFAULT_KEY
 base_url="http://localhost:9090/v1"
 )
 
-# 非流式请求 - 使用GLM-4.5
+# 非流式请求 - 使用GLM-4.6
 response = client.chat.completions.create(
-model="GLM-4.5",
+model="GLM-4.6",
 messages=[{"role": "user", "content": "你好，请介绍一下自己"}]
 )
 
 print(response.choices[0].message.content)
 
 
-# 流式请求 - 使用GLM-4.5
+# 流式请求 - 使用GLM-4.6
 response = client.chat.completions.create(
-model="GLM-4.5",
+model="GLM-4.6",
 messages=[{"role": "user", "content": "请写一首关于春天的诗"}],
 stream=True
 )
@@ -2435,7 +2457,7 @@ curl -X POST http://localhost:9090/v1/chat/completions \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer your-api-key" \
 -d '{
-"model": "GLM-4.5",
+"model": "GLM-4.6",
 "messages": [{"role": "user", "content": "你好"}],
 "stream": false
 }'
@@ -2445,7 +2467,7 @@ curl -X POST http://localhost:9090/v1/chat/completions \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer your-api-key" \
 -d '{
-"model": "GLM-4.5",
+"model": "GLM-4.6",
 "messages": [{"role": "user", "content": "你好"}],
 "stream": true
 }'</div>
@@ -2464,7 +2486,7 @@ headers: {
   'Authorization': 'Bearer your-api-key'
 },
 body: JSON.stringify({
-  model: 'GLM-4.5',
+  model: 'GLM-4.6',
   messages: [{ role: 'user', content: message }],
   stream: stream
 })
